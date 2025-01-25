@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Влучити в область</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 20px;
+        }
+        canvas {
+            border: 2px solid black;
+            margin: 20px auto;
+            display: block;
+        }
+        .controls {
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        #hints {
+            margin-top: 20px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            max-width: 400px;
+            margin: 20px auto;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <h1>Влучити в область</h1>
+    <p>Керуйте точкою за допомогою кнопок, щоб потрапити в цільову область.</p>
+    <canvas id="gameCanvas" width="400" height="400"></canvas>
+    <div class="controls">
+        <button onclick="movePoint(-10, 0)">⬅️ Вліво</button>
+        <button onclick="movePoint(10, 0)">➡️ Вправо</button>
+        <button onclick="movePoint(0, -10)">⬆️ Вверх</button>
+        <button onclick="movePoint(0, 10)">⬇️ Вниз</button>
+    </div>
+    <div id="hints">
+        <strong>Історія спроб:</strong>
+        <ul id="hintList"></ul>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const hintList = document.getElementById('hintList');
+
+        // Опис області
+        const verticalStrip1 = { xStart: 50, xEnd: 150 }; // Фігура-1
+        const horizontalStrip = { yStart: 100, yEnd: 200 }; // Фігура-2
+        const verticalStrip2 = { xStart: 100, xEnd: 300 }; // Фігура-3
+
+        let pointX = Math.floor(Math.random() * 400); // Початкова позиція точки
+        let pointY = Math.floor(Math.random() * 400);
+        let previousDistance = null;
+
+        // Функція малювання області
+        function drawTargetArea() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Фігура-1: Перша вертикальна стрічка
+            ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
+            ctx.fillRect(verticalStrip1.xStart, 0, verticalStrip1.xEnd - verticalStrip1.xStart, canvas.height);
+
+            // Фігура-2: Горизонтальна стрічка
+            ctx.fillStyle = 'rgba(0, 255, 0, 0.3)';
+            ctx.fillRect(0, horizontalStrip.yStart, canvas.width, horizontalStrip.yEnd - horizontalStrip.yStart);
+
+            // Фігура-3: Друга вертикальна стрічка
+            ctx.fillStyle = 'rgba(0, 0, 255, 0.3)';
+            ctx.fillRect(verticalStrip2.xStart, 0, verticalStrip2.xEnd - verticalStrip2.xStart, canvas.height);
+        }
+
+        // Малюємо точку
+        function drawPoint() {
+            ctx.beginPath();
+            ctx.arc(pointX, pointY, 5, 0, Math.PI * 2);
+            ctx.fillStyle = 'red';
+            ctx.fill();
+            ctx.stroke();
+        }
+
+        // Оновлення canvas
+        function updateCanvas() {
+            drawTargetArea();
+            drawPoint();
+        }
+
+        // Обчислення відстані до центра області
+        function calculateDistance(x, y) {
+            const centerX = (verticalStrip2.xStart + verticalStrip2.xEnd) / 2;
+            const centerY = (horizontalStrip.yStart + horizontalStrip.yEnd) / 2;
+            return Math.sqrt((x - centerX) ** 2 + (y - centerY) ** 2);
+        }
+
+        // Перевірка чи точка в області
+        function isPointInTargetArea(x, y) {
+            const inVertical1 = x >= verticalStrip1.xStart && x <= verticalStrip1.xEnd;
+            const inHorizontal = y >= horizontalStrip.yStart && y <= horizontalStrip.yEnd;
+            const inVertical2 = x >= verticalStrip2.xStart && x <= verticalStrip2.xEnd;
+
+            return (inVertical1 || inHorizontal) && inVertical2;
+        }
+
+        // Додавання підказки
+        function addHint(hint) {
+            const li = document.createElement('li');
+            li.textContent = hint;
+            hintList.appendChild(li);
+        }
+
+        // Переміщення точки
+        function movePoint(dx, dy) {
+            const prevX = pointX;
+            const prevY = pointY;
+
+            // Оновлення координат
+            pointX += dx;
+            pointY += dy;
+
+            const distance = calculateDistance(pointX, pointY);
+            if (isPointInTargetArea(pointX, pointY)) {
+                addHint(`🎯 Влучили в ціль на координатах (${pointX}, ${pointY})!`);
+                updateCanvas();
+                return;
+            }
+
+            if (previousDistance === null) {
+                addHint(`Початкові координати: (${pointX}, ${pointY}).`);
+            } else if (distance < previousDistance) {
+                addHint(`Тепліше: (${pointX}, ${pointY}), відстань до цілі зменшилася.`);
+            } else {
+                addHint(`Холодніше: (${pointX}, ${pointY}), відстань до цілі збільшилася.`);
+            }
+
+            previousDistance = distance;
+
+            // Оновлення canvas
+            updateCanvas();
+        }
+
+        // Початкове малювання
+        updateCanvas();
+        addHint(`Початкові координати точки: (${pointX}, ${pointY}).`);
+    </script>
+</body>
+</html>
+    

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Обробка послідовності</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 20px;
+        }
+        #sequence {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        .sequence-item {
+            margin: 5px;
+            padding: 10px 20px;
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            cursor: pointer;
+            user-select: none;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin: 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Обробка послідовності</h1>
+    <p>Оберіть файл для завантаження послідовності:</p>
+    <input type="file" id="inputFile" accept=".txt">
+    <button onclick="loadSequence()">Завантажити послідовність</button>
+    <div id="sequence"></div>
+    <div>
+        <button onclick="sortSequence()">Упорядкувати</button>
+        <button onclick="saveSequence()">Зберегти у файл</button>
+    </div>
+    <p>Оберіть місце для збереження результату:</p>
+    <input type="file" id="outputFile" accept=".txt" style="display:none;">
+    <p id="instructions">Натисніть на два елементи, щоб поміняти їх місцями.</p>
+
+    <script>
+        let sequence = [];
+        let firstSelectedIndex = null;
+
+        // Завантаження послідовності з файлу
+        function loadSequence() {
+            const inputFile = document.getElementById('inputFile').files[0];
+            if (!inputFile) {
+                alert('Оберіть файл для завантаження!');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                sequence = e.target.result.split(/\s+/).filter(item => item.trim() !== '');
+                displaySequence();
+            };
+            reader.readAsText(inputFile);
+        }
+
+        // Відображення послідовності
+        function displaySequence() {
+            const sequenceDiv = document.getElementById('sequence');
+            sequenceDiv.innerHTML = '';
+            sequence.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'sequence-item';
+                div.textContent = item;
+                div.setAttribute('data-index', index);
+                div.onclick = () => handleSwap(index);
+                sequenceDiv.appendChild(div);
+            });
+        }
+
+        // Обробка кліків для перестановки елементів
+        function handleSwap(index) {
+            if (firstSelectedIndex === null) {
+                firstSelectedIndex = index;
+                document.querySelector(`[data-index="${index}"]`).style.backgroundColor = 'yellow';
+            } else {
+                [sequence[firstSelectedIndex], sequence[index]] = [sequence[index], sequence[firstSelectedIndex]];
+                firstSelectedIndex = null;
+                displaySequence();
+            }
+        }
+
+        // Сортування послідовності
+        function sortSequence() {
+            sequence.sort((a, b) => (a > b ? 1 : -1));
+            displaySequence();
+        }
+
+        // Збереження послідовності у файл
+        function saveSequence() {
+            const outputFile = document.createElement('a');
+            const blob = new Blob([sequence.join(' ')], { type: 'text/plain' });
+            outputFile.href = URL.createObjectURL(blob);
+            outputFile.download = 'sorted_sequence.txt';
+            outputFile.click();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Перестановка кнопок</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        .button-row {
+            margin: 10px 0;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Перестановка кнопок</h1>
+    <p>Натисніть дві кнопки, щоб поміняти їх місцями.</p>
+    <div class="button-row" id="buttonRow">
+        <button onclick="handleClick(this)">A</button>
+        <button onclick="handleClick(this)">B</button>
+        <button onclick="handleClick(this)">C</button>
+        <button onclick="handleClick(this)">D</button>
+        <button onclick="handleClick(this)">E</button>
+    </div>
+    <p id="status" style="color: green; font-weight: bold;"></p>
+
+    <script>
+        let firstButton = null;
+
+        function handleClick(button) {
+            const status = document.getElementById("status");
+
+            if (!firstButton) {
+                // Запам'ятати першу кнопку
+                firstButton = button;
+                status.textContent = `Вибрано першу кнопку: ${button.textContent}`;
+            } else {
+                // Виконати перестановку
+                const secondButton = button;
+                const temp = firstButton.textContent;
+                firstButton.textContent = secondButton.textContent;
+                secondButton.textContent = temp;
+
+                status.textContent = `Переставлено кнопки: ${firstButton.textContent} та ${secondButton.textContent}`;
+                firstButton = null; // Скинути вибір
+            }
+        }
+    </script>
+</body>
+</html>
